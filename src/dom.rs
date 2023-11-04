@@ -6,7 +6,7 @@ pub struct Node {
     pub node_type: NodeType,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum NodeType {
     Root,
     Text(String),
@@ -23,7 +23,6 @@ pub struct ElementType {
 
 #[derive(Debug)]
 pub struct DocumentType {
-    pub charset: String,
     pub doctype: String,
 }
 
@@ -53,10 +52,10 @@ pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
     }
 }
 
-pub fn document(doctype: String, charset: String, children: Vec<Node>) -> Node {
+pub fn document(doctype: String, children: Vec<Node>) -> Node {
     Node {
         children,
-        node_type: NodeType::Document(DocumentType { charset, doctype }),
+        node_type: NodeType::Document(DocumentType { doctype }),
     }
 }
 
@@ -67,13 +66,26 @@ pub fn comment(data: String) -> Node {
     }
 }
 
+impl PartialEq for Node {
+   fn eq(&self, other: &Self) -> bool {
+       self.node_type == other.node_type && self.children == other.children
+   } 
+}
+
+
 impl Display for DocumentType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "DocumentType doctype - {}, charset - {}",
-            self.doctype, self.charset
+            "DocumentType doctype - {}",
+            self.doctype
         )
+    }
+}
+
+impl PartialEq for DocumentType {
+    fn eq(&self, other: &Self) -> bool {
+        self.doctype == other.doctype
     }
 }
 
@@ -89,5 +101,11 @@ impl Display for ElementType {
                 .collect::<Vec<String>>()
                 .join(" , ")
         )
+    }
+}
+
+impl PartialEq for ElementType {
+    fn eq(&self, other: &Self) -> bool {
+        self.tag_name == other.tag_name && self.attributes == other.attributes
     }
 }
